@@ -41,26 +41,27 @@ class DataProcessor:
         json_files = self.discover_raw_files()
         parquet_files = list(self.processed_data_path.glob("aerogeradores_processed_*.parquet"))
         
-        # Se não temos JSONs, não precisamos transformar
         if not json_files:
-            return {'needs_transformation': False, 'reason': 'Nenhum arquivo JSON encontrado'}
+            return {
+                'needs_transformation': False, 
+                'reason': 'Nenhum arquivo JSON encontrado'
+            }
         
-        # Se já temos Parquets suficientes, verificar se são mais novos que JSONs
         if len(parquet_files) >= len(json_files):
-            # Verificar se Parquets são mais novos que JSONs
             latest_json = max(f.stat().st_mtime for f in json_files)
             latest_parquet = max(f.stat().st_mtime for f in parquet_files)
             
             if latest_parquet > latest_json:
                 return {
                     'needs_transformation': False, 
+                    'reason': f'Parquets já atualizados ({len(parquet_files)} arquivos)',
                     'json_count': len(json_files),
                     'parquet_count': len(parquet_files)
                 }
         
         return {
             'needs_transformation': True, 
-            'reason': 'Transformação necessária',  # ← ADICIONAR ESTA LINHA
+            'reason': 'Novos JSONs encontrados - transformação necessária',
             'json_count': len(json_files), 
             'parquet_count': len(parquet_files)
         }
@@ -158,10 +159,12 @@ class DataProcessor:
             check_result = self.check_transformation_needed()
             if not check_result['needs_transformation']:
                 existing_parquets = list(self.processed_data_path.glob("aerogeradores_processed_*.parquet"))
-                logger.info(f"✅ {check_result['reason']}")
+                reason = check_result.get('reason', 'Parquets já atualizados')
+                logger.info(f"✅ {reason}")
                 return [str(f) for f in existing_parquets]
             else:
-                logger.info(f"🔄 Transformação necessária: {check_result}")
+                reason = check_result.get('reason', 'Transformação necessária')
+                logger.info(f"🔄 Transformação necessária: {reason}")
                 # Limpar parquets antigos quando há novos JSONs
                 self._cleanup_old_transformations()
         else:
@@ -169,9 +172,6 @@ class DataProcessor:
             # Limpar parquets antigos no force refresh
             self._cleanup_old_transformations()
         
-        # Executar transformação normal...
-        # ... resto do código permanece igual
-    
         # Executar transformação normal
         json_files = self.discover_raw_files()
         

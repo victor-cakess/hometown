@@ -1,27 +1,27 @@
-# Hometown - Analytics Case: Pipeline de Dados de Aerogeradores SIGEL/ANEEL
+# Hometown - Analytics case: Pipeline de dados de aerogeradores SIGEL/ANEEL
 
-## Visão Geral do Projeto
+## Visão geral do projeto
 
 Este projeto implementa um pipeline completo de engenharia de dados para extração, transformação e consolidação de dados de aerogeradores brasileiros da API SIGEL/ANEEL. O sistema foi arquitetado com foco em reprodutibilidade, idempotência e performance, seguindo as melhores práticas de engenharia de dados em produção.
 
-### Contexto do Problema
+### Contexto do problema
 
-A Agência Nacional de Energia Elétrica (ANEEL) disponibiliza dados de aerogeradores através do Sistema de Informações Geográficas do Setor Elétrico (SIGEL), uma API ArcGIS REST que contém informações técnicas e geográficas de todos os aerogeradores em operação no Brasil. O desafio consistia em criar um pipeline robusto para extrair esses dados e prepará-los para análise no Tableau, considerando as limitações de paginação da API e a necessidade de otimização para grandes volumes de dados.
+A Agência Nacional de Energia Elétrica (ANEEL) disponibiliza dados de aerogeradores através do Sistema de Informações Geográficas do Setor Elétrico (SIGEL), uma API ArcGIS REST que contém informações técnicas e geográficas de todos os aerogeradores em operação no Brasil. O problema consistia em criar um pipeline robusto para extrair esses dados e prepará-los para análise no Tableau, considerando as limitações de paginação da API e a necessidade de otimização para grandes volumes de dados.
 
-### Objetivos Arquiteturais
+### Objetivos arquiteturais
 
 O projeto foi desenvolvido com os seguintes objetivos técnicos:
 
 1. **Idempotência**: O pipeline deve executar de forma idempotente, evitando reprocessamento desnecessário de dados
-2. **Baseado em Dados**: Utilizar metadados dos próprios dados (DATA_ATUALIZACAO) para determinar necessidade de atualização
+2. **Baseado em dados**: Utilizar metadados dos próprios dados (DATA_ATUALIZACAO) para determinar necessidade de atualização
 3. **Performance**: Implementar paralelização e otimizações para processar grandes volumes de dados eficientemente
 4. **Reprodutibilidade**: Garantir que o pipeline produza resultados consistentes independente do ambiente
 5. **Escalabilidade**: Arquitetura modular que suporte crescimento dos dados e complexidade
 6. **Observabilidade**: Sistema completo de logs e monitoramento de cada etapa do pipeline
 
-## Arquitetura do Sistema
+## Arquitetura do sistema
 
-### Visão Geral da Arquitetura
+### Visão geral da Arquitetura
 
 O pipeline segue uma arquitetura ELT (Extract, Load, Transform) moderna, implementada em três estágios principais:
 
@@ -31,9 +31,9 @@ API SIGEL/ANEEL → JSON (Raw) → Parquet (Processed) → CSV (Output) → Tabl
   Extração      Transformação   Consolidação    Visualização
 ```
 
-### Componentes Principais
+### Componentes principais
 
-#### 1. Módulo de Extração (`src/extraction/`)
+#### 1. Módulo de extração (`src/extraction/`)
 
 **Responsabilidades:**
 - Comunicação com API SIGEL/ANEEL via protocolo HTTP/REST
@@ -42,7 +42,7 @@ API SIGEL/ANEEL → JSON (Raw) → Parquet (Processed) → CSV (Output) → Tabl
 - Detecção inteligente de mudanças baseada em DATA_ATUALIZACAO
 - Persistência de dados raw em formato JSON
 
-**Arquitetura Técnica:**
+**Arquitetura técnica:**
 ```python
 class SigelExtractor:
     - _make_request(): Gerencia comunicação HTTP com retry automático
@@ -52,22 +52,22 @@ class SigelExtractor:
     - _cleanup_old_extractions(): Gerencia limpeza de dados obsoletos
 ```
 
-**Decisões Arquiteturais:**
+**Decisões arquiteturais:**
 
-*Paginação Sequencial vs Paralela:*
+*Paginação sequencial vs paralela:*
 Optamos por requests HTTP sequenciais com processamento paralelo dos dados. Esta decisão foi tomada após considerar que:
 - APIs REST geralmente têm rate limiting que pode ser violado com requests paralelos
 - A limitação de performance está no processamento dos dados, não na rede
 - Requests sequenciais são mais previsíveis e debuggáveis
 
-*Formato de Persistência:*
+*Formato de persistência:*
 JSON foi escolhido para a camada raw por:
 - Preservação completa da estrutura original da API
 - Facilidade de debug e inspeção manual
 - Compatibilidade universal entre ferramentas
 - Overhead de parsing aceitável para esta escala de dados
 
-*Estratégia de Idempotência:*
+*Estratégia de idempotência:*
 Implementamos detecção baseada em conteúdo usando o campo DATA_ATUALIZACAO da própria API:
 ```python
 def check_data_freshness(self) -> Dict:
@@ -82,7 +82,7 @@ Esta abordagem é superior a métodos baseados em timestamp de arquivo pois:
 - Evita false positives causados por execuções múltiplas
 - Utiliza a fonte de verdade da própria API
 
-#### 2. Módulo de Transformação (`src/transformation/`)
+#### 2. Módulo de transformação (`src/transformation/`)
 
 **Responsabilidades:**
 - Conversão de JSON para formato Parquet otimizado
@@ -90,7 +90,7 @@ Esta abordagem é superior a métodos baseados em timestamp de arquivo pois:
 - Validação de integridade e qualidade dos dados
 - Implementação de processamento paralelo para performance
 
-**Arquitetura Técnica:**
+**Arquitetura técnica:**
 ```python
 class DataProcessor:
     - _json_to_geodataframe(): Converte JSON em GeoDataFrame
@@ -99,7 +99,7 @@ class DataProcessor:
     - check_transformation_needed(): Verifica necessidade de reprocessamento
 ```
 
-**Decisões Arquiteturais:**
+**Decisões arquiteturais:**
 
 *JSON vs Parquet:*
 A transformação para Parquet foi motivada por:
@@ -115,7 +115,7 @@ GeoPandas foi escolhido para processamento geográfico por:
 - Integração com bibliotecas GIS padrão da indústria
 - Suporte a múltiplos sistemas de coordenadas
 
-*Paralelização por Arquivo vs por Registro:*
+*Paralelização por arquivo vs por Registro:*
 Implementamos paralelização em nível de arquivo usando ThreadPoolExecutor:
 ```python
 with ThreadPoolExecutor(max_workers=4) as executor:
@@ -131,7 +131,7 @@ Esta estratégia oferece:
 - Overhead mínimo de sincronização
 - Escalabilidade linear até limite de I/O
 
-#### 3. Módulo de Consolidação (`src/consolidation/`)
+#### 3. Módulo de consolidação (`src/consolidation/`)
 
 **Responsabilidades:**
 - Agregação de múltiplos Parquets em dataset unificado
@@ -139,7 +139,7 @@ Esta estratégia oferece:
 - Validação de consistência e completude
 - Geração de CSV final para consumo analítico
 
-**Arquitetura Técnica:**
+**Arquitetura técnica:**
 ```python
 class DataConsolidator:
     - load_and_combine_parquets(): Agrega múltiplos Parquets
@@ -148,9 +148,9 @@ class DataConsolidator:
     - _validate_final_data(): Validações de qualidade final
 ```
 
-**Decisões Arquiteturais:**
+**Decisões arquiteturais:**
 
-*Estratégia de Validação Inteligente:*
+*Estratégia de validação inteligente:*
 Implementamos validação baseada em contagem de registros ao invés de timestamp:
 ```python
 def check_consolidation_needed(self) -> dict:
@@ -164,16 +164,16 @@ Esta abordagem resolve problemas de:
 - Arquivos corrompidos ou incompletos
 - Mudanças no número total de registros
 
-*Layout Otimizado para Tableau:*
+*Layout otimizado para tableau:*
 O CSV final é estruturado especificamente para análise:
 - Coordenadas (latitude, longitude) nas primeiras colunas para detecção automática de mapas
 - Campos numéricos com precisão otimizada (6 decimais para coordenadas)
 - Remoção de campos técnicos desnecessários para análise
 - Ordenação consistente de colunas
 
-### Sistema de Logs e Observabilidade
+### Sistema de logs e observabilidade
 
-**Arquitetura de Logging:**
+**Arquitetura de logging:**
 ```python
 # Configuração centralizada em utils/logger.py
 def setup_logger(name: str, log_file: Optional[str] = None) -> logging.Logger:
@@ -183,21 +183,21 @@ def setup_logger(name: str, log_file: Optional[str] = None) -> logging.Logger:
     )
 ```
 
-**Níveis de Observabilidade:**
+**Níveis de observabilidade:**
 - **INFO**: Progresso de operações e estatísticas principais
 - **DEBUG**: Detalhes de processamento individual de arquivos
 - **WARNING**: Situações anômalas que não impedem execução
 - **ERROR**: Falhas que requerem intervenção
 
-**Métricas Coletadas:**
+**Métricas coletadas:**
 - Tempo de execução por etapa do pipeline
 - Volume de dados processados (registros e MB)
 - Taxa de sucesso/falha por operação
 - Estatísticas de qualidade de dados (coordenadas válidas, campos nulos)
 
-### Gerenciamento de Estado e Metadados
+### Gerenciamento de estado e metadados
 
-**Persistência de Metadados:**
+**Persistência de metadados:**
 ```json
 // data/raw/extraction_metadata.json
 {
@@ -208,17 +208,17 @@ def setup_logger(name: str, log_file: Optional[str] = None) -> logging.Logger:
 }
 ```
 
-**Estratégia de Cleanup:**
+**Estratégia de cleanup:**
 O sistema implementa limpeza automática de dados obsoletos:
 - Remoção de extrações anteriores antes de nova extração
 - Limpeza de transformações antigas quando novos JSONs são detectados
 - Preservação apenas da versão mais recente de cada etapa
 
-## Implementação Técnica Detalhada
+## Implementação técnica detalhada
 
 ### Tratamento de Erros e Resiliência
 
-**Sistema de Retry Exponencial:**
+**Sistema de retry exponencial:**
 ```python
 def _make_request(self, params: Dict) -> Optional[Dict]:
     for attempt in range(self.max_retries):
@@ -234,7 +234,7 @@ def _make_request(self, params: Dict) -> Optional[Dict]:
                 raise
 ```
 
-**Categorização de Exceções:**
+**Categorização de exceções:**
 ```python
 # Hierarquia customizada de exceções
 class HomeTownBaseException(Exception): pass
@@ -244,14 +244,14 @@ class DataProcessingError(HomeTownBaseException): pass
 class ValidationError(HomeTownBaseException): pass
 ```
 
-### Otimizações de Performance
+### Otimizações de performance
 
-**Gestão Eficiente de Memória:**
+**Gestão eficiente de memória:**
 - Processamento de arquivos individuais ao invés de dataset completo na memória
 - Uso de generators para iteração sobre grandes coleções
 - Limpeza explícita de DataFrames após processamento
 
-**Paralelização Otimizada:**
+**Paralelização otimizada:**
 ```python
 # ThreadPoolExecutor com worker count otimizado
 max_workers = min(4, cpu_count())  # Evita oversaturation
@@ -261,14 +261,14 @@ with ThreadPoolExecutor(max_workers=max_workers) as executor:
         result = future.result()
 ```
 
-**Compressão e Serialização:**
+**Compressão e serialização:**
 - Parquet com compressão SNAPPY (padrão)
 - JSON com pretty-printing desabilitado em produção
 - CSV com encoding UTF-8 e separadores otimizados
 
-### Validações de Qualidade de Dados
+### Validações de qualidade de dados
 
-**Validações Geográficas:**
+**Validações geográficas:**
 ```python
 def validate_geometry(gdf: gpd.GeoDataFrame) -> bool:
     # Validação de range geográfico para o Brasil
@@ -281,15 +281,15 @@ def validate_geometry(gdf: gpd.GeoDataFrame) -> bool:
         logger.warning(f"{invalid_coords} coordenadas fora do Brasil")
 ```
 
-**Validações de Completude:**
+**Validações de completude:**
 - Verificação de campos obrigatórios (POT_MW, ALT_TOTAL, NOME_EOL)
 - Detecção de registros duplicados
 - Validação de tipos de dados e ranges esperados
 - Consistência entre contagem esperada e real de registros
 
-### Configuração e Parametrização
+### Configuração e parametrização
 
-**Configuração Centralizada:**
+**Configuração centralizada:**
 ```python
 # src/config/settings.py
 SIGEL_CONFIG = {
@@ -306,7 +306,7 @@ SIGEL_CONFIG = {
 }
 ```
 
-**Detecção Automática de Ambiente:**
+**Detecção automática de ambiente:**
 ```python
 def _get_project_root(self) -> Path:
     current_path = Path.cwd()
@@ -315,7 +315,7 @@ def _get_project_root(self) -> Path:
     return current_path
 ```
 
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```
 hometown/
@@ -339,8 +339,6 @@ hometown/
 │   ├── raw/                    # JSON bruto da API
 │   ├── processed/              # Parquets transformados
 │   └── output/                 # CSV final para Tableau
-├── tests/                      # Testes automatizados
-├── logs/                       # Arquivos de log
 ├── pyproject.toml              # Configuração Poetry
 ├── Dockerfile                  # Container principal
 ├── docker-compose.yml          # Orquestração
@@ -348,23 +346,17 @@ hometown/
 └── README.md                   # Este documento
 ```
 
-### Organização de Código
+### Organização de código
 
-**Princípios Aplicados:**
-- **Separação de Responsabilidades**: Cada módulo tem responsabilidade única e bem definida
-- **Inversão de Dependências**: Módulos dependem de abstrações, não de implementações concretas
-- **Configuração Externa**: Todas as configurações centralizadas e externalizáveis
+**Princípios aplicados:**
+- **Separação de responsabilidades**: Cada módulo tem responsabilidade única e bem definida
+- **Inversão de dependências**: Módulos dependem de abstrações, não de implementações concretas
+- **Configuração externa**: Todas as configurações centralizadas e externalizáveis
 - **Testabilidade**: Arquitetura permite testing unitário e de integração
 
-**Padrões de Design:**
-- **Strategy Pattern**: Diferentes estratégias de validação e processamento
-- **Template Method**: Pipeline com etapas customizáveis
-- **Factory Pattern**: Criação de loggers e processadores
-- **Observer Pattern**: Sistema de logging e monitoramento
+## Fluxo de dados detalhado
 
-## Fluxo de Dados Detalhado
-
-### 1. Fase de Extração
+### 1. Fase de extração
 
 **Input**: API SIGEL/ANEEL  
 **Output**: JSON files em `data/raw/`  
@@ -374,7 +366,7 @@ hometown/
 - Validação de estrutura de resposta da API
 - Nomenclatura padronizada: `aerogeradores_raw_{timestamp}_page_{num}.json`
 
-**Fluxo Detalhado:**
+**Fluxo detalhado:**
 1. Verificação de freshness via `DATA_ATUALIZACAO`
 2. Limpeza de extrações obsoletas (se necessário)
 3. Descoberta do total de registros via API
@@ -382,7 +374,7 @@ hometown/
 5. Extração sequencial com processamento paralelo
 6. Persistência de metadados para próximas execuções
 
-### 2. Fase de Transformação
+### 2. Fase de transformação
 
 **Input**: JSON files de `data/raw/`  
 **Output**: Parquet files em `data/processed/`  
@@ -393,14 +385,14 @@ hometown/
 - Conversão de tipos de dados otimizada
 - Compressão automática via Parquet
 
-**Fluxo Detalhado:**
+**Fluxo detalhado:**
 1. Verificação de necessidade via timestamp de arquivos
 2. Limpeza de transformações obsoletas (se necessário)
 3. Processamento paralelo de arquivos JSON
 4. Validação individual de cada GeoDataFrame
 5. Serialização em Parquet com metadata preservado
 
-### 3. Fase de Consolidação
+### 3. Fase de consolidação
 
 **Input**: Parquet files de `data/processed/`  
 **Output**: CSV file em `data/output/`  
@@ -411,19 +403,18 @@ hometown/
 - Validação de completude e consistência
 - Otimização para consumo no Tableau
 
-**Fluxo Detalhado:**
+**Fluxo detalhado:**
 1. Verificação inteligente via contagem de registros
 2. Carregamento e concatenação de todos os Parquets
 3. Validação geográfica final (range de coordenadas)
 4. Otimização de layout para ferramentas de BI
 5. Serialização em CSV com configurações otimizadas
 
-## Ferramentas e Tecnologias
+## Stack
 
-### Stack Tecnológico Principal
+### Stack principal
 
 **Python 3.11+**: Linguagem principal escolhida por:
-- Ecossistema maduro para data engineering (pandas, geopandas)
 - Performance adequada para volumes de dados do projeto
 - Facilidade de deployment e containerização
 - Integração nativa com Jupyter para prototipagem
@@ -452,7 +443,7 @@ hometown/
 - Compressão eficiente (SNAPPY, GZIP, LZ4)
 - Compatibilidade com Apache Arrow ecosystem
 
-### Ferramentas de Desenvolvimento
+### Ferramentas de desenvolvimento
 
 **Poetry**: Gerenciamento de dependências e ambiente virtual
 - Resolução determinística de dependências
@@ -472,7 +463,7 @@ hometown/
 - Facilidade de deployment e distribuição
 - Integração com orquestradores (Kubernetes, Docker Swarm)
 
-### Infraestrutura e Deployment
+### Infraestrutura e deployment
 
 **Makefile**: Automação de comandos
 - Interface unificada para operações comuns
@@ -480,15 +471,15 @@ hometown/
 - Documentação executável de procedimentos
 - Compatibilidade multiplataforma
 
-**Docker Compose**: Orquestração local
+**Docker compose**: Orquestração local
 - Definição declarativa de serviços
 - Networking automático entre containers
 - Volume mounting para desenvolvimento
 - Profiles para diferentes ambientes (dev, test, prod)
 
-## Análise de Performance
+## Análise de performance
 
-### Benchmarks de Performance
+### Benchmarks de Pprformance
 
 **Extração (23.522 registros)**:
 - Tempo total: ~8-10 segundos
@@ -508,7 +499,7 @@ hometown/
 - Output size: 5.89MB CSV final
 - Validação: 100% registros válidos geograficamente
 
-### Otimizações Implementadas
+### Otimizações implementadas
 
 **I/O Otimizations**:
 - Streaming processing evita loading completo na memória
@@ -516,13 +507,13 @@ hometown/
 - Compressão automática reduz I/O disk
 - Batch processing minimiza overhead de operações
 
-**CPU Optimizations**:
+**CPU pptimizations**:
 - ThreadPoolExecutor para paralelização I/O-bound operations
 - Pandas vectorized operations evitam loops Python
 - GeoPandas spatial indexing para operações geográficas
 - Early validation evita processamento de dados inválidos
 
-**Memory Optimizations**:
+**Memory optimizations**:
 - Per-file processing evita memory explosion
 - Explicit DataFrame cleanup após processamento
 - Generator patterns para iteração over large collections
@@ -530,182 +521,57 @@ hometown/
 
 ### Escalabilidade
 
-**Horizontal Scaling**:
+**Horizontal scaling**:
 - Arquitetura stateless permite paralelização trivial
 - File-based checkpointing permite restart de falhas
 - Modular design facilita distribuição em cluster
 - Docker containers simplificam deployment distribuído
 
-**Vertical Scaling**:
+**Vertical scaling**:
 - ThreadPoolExecutor scales com CPU cores disponíveis
 - Memory usage linear com tamanho de arquivo individual
 - Parquet format escala eficientemente para TBs
 - Pandas operations aproveitam múltiplos cores automaticamente
 
-## Considerações de Produção
+## Considerações de produção
 
-### Monitoramento e Alerting
+### Monitoramento e alerting
 
-**Métricas Principais**:
+**Métricas principais**:
 - Latência de cada etapa do pipeline
 - Taxa de sucesso/falha por operação
 - Volume de dados processados
 - Uso de recursos (CPU, memory, disk)
 
-**Alerting Strategies**:
+**Alerting strategies**:
 - Falhas de conectividade com API
 - Degradação de performance (>2x baseline)
 - Detecção de dados corrompidos ou inválidos
 - Anomalias em volume de dados
 
-### Backup e Disaster Recovery
+### Backup e disaster recovery
 
-**Data Backup**:
+**Data backup**:
 - Raw data (JSON) preservado como source of truth
 - Versioning de Parquets para rollback
 - Metadata backup para reconstruction
 - Cross-region replication para DR
 
-**Recovery Procedures**:
+**Recovery procedures**:
 - Idempotent pipeline permite re-execution segura
 - Checkpoint-based recovery para falhas parciais
 - Automated healing para corruption detection
 - Manual override procedures para edge cases
 
-### Security Considerations
-
-**Data Protection**:
-- Dados públicos da ANEEL, sem PII sensitivo
-- HTTPS enforcement para API communication
-- Container security com non-root users
-- Network segmentation entre componentes
-
-**Access Control**:
-- Role-based access para diferentes ambientes
-- API key management para services externos
-- Audit logging para compliance
-- Encrypted storage para dados sensitivos (quando aplicável)
-
-### Maintenance e Updates
-
-**Dependency Management**:
-- Automated security updates via Dependabot
-- Pinned versions para reprodutibilidade
-- Regular audits de vulnerabilidades
-- Backward compatibility testing
-
-**Schema Evolution**:
-- Flexible schema handling para API changes
-- Graceful degradation para campos faltantes
-- Version compatibility entre data formats
-- Migration procedures para breaking changes
-
-## Comparação de Abordagens Alternativas
-
-### Extração: Pull vs Push
-
-**Abordagem Implementada (Pull)**:
-- Pipeline controla timing de execução
-- Simples de implementar e debuggar
-- Adequado para dados com baixa frequência de atualização
-- Menor complexidade de infraestrutura
-
-**Alternativa (Push/Webhook)**:
-- Real-time updates quando disponível
-- Menor latência para dados críticos
-- Maior complexidade de infraestrutura
-- Requer API push da fonte (não disponível no SIGEL)
-
-### Formato de Dados: Parquet vs Alternativas
-
-**Parquet (Escolhido)**:
-- Compressão eficiente (88% redução)
-- Acesso colunar otimizado para analytics
-- Schema evolution support
-- Compatibilidade com ecossistema big data
-
-**JSON**:
-- Flexibilidade de schema
-- Facilidade de debug
-- Maior overhead de storage e processing
-- Adequado apenas para raw data layer
-
-**Apache Avro**:
-- Schema evolution superior ao Parquet
-- Melhor para streaming use cases
-- Menor suporte em ferramentas analytics
-- Overhead de serialization maior
-
-**Delta Lake/Iceberg**:
-- ACID transactions e time travel
-- Melhor para data lakehouse architectures
-- Overhead para casos de uso simples
-- Requer Spark para full feature set
-
-### Orquestração: Airflow vs Alternativas
-
-**Atual (Makefiles + Cron)**:
-- Simplicidade máxima
-- Zero overhead de infraestrutura
-- Adequado para workflows simples
-- Limited error handling e retry logic
-
-**Apache Airflow**:
-- Rich DAG definition e visualization
-- Sophisticated retry e error handling
-- Extensive integrations ecosystem
-- Overhead significativo para casos simples
-
-**Prefect/Dagster**:
-- Modern Python-first design
-- Better developer experience
-- Cloud-native architecture
-- Menor ecosystem que Airflow
-
-**Kubernetes CronJobs**:
-- Native container orchestration
-- Horizontal scaling automático
-- Complexidade de setup
-- Vendor lock-in para cloud providers
 
 ## Conclusões e Recomendações
 
 ### Sucesso da Implementação
 
-O pipeline implementado atende completamente aos requisitos do case, demonstrando:
+O pipeline implementado atende aos requisitos do case, demonstrando:
 
 1. **Robustez**: Sistema idempotente que evita reprocessamento desnecessário
 2. **Performance**: Processamento eficiente de 23.522 registros em <15 segundos total
 3. **Qualidade**: Validações automáticas garantem dados consistentes e corretos
 4. **Maintainability**: Código modular e bem documentado facilita manutenção
 5. **Scalability**: Arquitetura suporta crescimento significativo de dados
-
-### Próximos Passos Recomendados
-
-**Curto Prazo**:
-- Implementação de testes automatizados (unit + integration)
-- Containerização completa com Docker Compose
-- Configuração de CI/CD pipeline
-- Deployment automatizado em cloud provider
-
-**Médio Prazo**:
-- Migração para orquestrador (Airflow/Prefect)
-- Implementação de data quality monitoring
-- Adição de mais fontes de dados (outras APIs ANEEL)
-- Integration com data catalog e lineage tracking
-
-**Longo Prazo**:
-- Evolution para data lakehouse architecture
-- Real-time streaming para dados críticos
-- Machine learning pipeline para análises preditivas
-- Multi-tenancy support para diferentes organizações
-
-### Lições Aprendidas
-
-1. **Idempotência Baseada em Dados**: Usar metadados dos próprios dados é mais confiável que timestamps de arquivo
-2. **Paralelização I/O-Bound**: ThreadPoolExecutor é suficiente para operações dominadas por I/O
-3. **Formato de Dados**: Parquet oferece excelente balance entre performance e compatibilidade
-4. **Validação Contínua**: Validações em cada etapa previnem propagação de erros
-5. **Observabilidade**: Logs detalhados são essenciais para debug e monitoramento
-
-Este projeto demonstra implementação de pipeline de dados following industry best practices, com arquitetura que balanceia simplicidade e robustez, resultando em sistema mantível e escalável para analytics de dados de energia renovável no Brasil.

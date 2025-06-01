@@ -564,9 +564,9 @@ hometown/
 - Manual override procedures para edge cases
 
 
-## Conclusões e Recomendações
+## Conclusões e recomendações
 
-### Sucesso da Implementação
+### Sucesso da implementação
 
 O pipeline implementado atende aos requisitos do case, demonstrando:
 

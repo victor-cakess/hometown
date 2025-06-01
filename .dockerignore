@@ -1,0 +1,75 @@
+# .dockerignore
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+docs/
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.pytest_cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Node (se necessário no futuro)
+node_modules
+npm-debug.log
+
+# Data directories (grandes)
+data/raw/*
+data/parquet/*
+data/consolidated/*
+data/outputs/*
+
+# Keep structure
+!data/raw/.gitkeep
+!data/parquet/.gitkeep
+!data/consolidated/.gitkeep
+!data/outputs/.gitkeep
+
+# Logs
+logs/
+*.log
+
+# Temporary
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Test files
+.pytest_cache/
+htmlcov/
+
+# Large files
+*.zip
+*.tar.gz
+*.parquet
+*.shp

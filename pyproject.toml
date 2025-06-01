@@ -1,0 +1,133 @@
+[tool.poetry]
+name = "hometown"
+version = "0.1.0"
+description = "Pipeline de análise de dados de aerogeradores SIGEL/ANEEL"
+authors = ["Victor José"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+pandas = "^2.1.0"
+geopandas = "^0.14.0"
+pyarrow = "^13.0.0"
+fastparquet = "^2023.8.0"
+shapely = "^2.0.0"
+fiona = "^1.9.0"
+jupyter = "^1.0.0"
+python-dotenv = "^1.0.0"
+loguru = "^0.7.0"
+pydantic = "^2.4.0"
+pydantic-settings = "^2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.0"
+black = "^23.7.0"
+isort = "^5.12.0"
+flake8 = "^6.0.0"
+mypy = "^1.5.0"
+pre-commit = "^3.4.0"
+httpx = "^0.24.0"
+responses = "^0.23.0"
+
+[tool.poetry.group.test.dependencies]
+factory-boy = "^3.3.0"
+faker = "^19.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# Configuração Black (formatação)
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+# Configuração isort (importações)
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+known_third_party = ["pandas", "geopandas", "requests", "loguru"]
+
+# Configuração mypy (type checking)
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "geopandas.*",
+    "fiona.*",
+    "shapely.*",
+    "pyarrow.*"
+]
+ignore_missing_imports = true
+
+# Configuração pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml"
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests"
+]
+
+# Configuração coverage
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/conftest.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:"
+]

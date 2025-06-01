@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  hometown-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hometown-analytics
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/app/data
+      - ./notebooks:/app/notebooks
+      - ./logs:/app/logs
+      - ./src:/app/src
+      - ./tests:/app/tests
+    environment:
+      - PYTHONPATH=/app
+      - ENV=development
+    env_file:
+      - .env
+    networks:
+      - hometown-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Serviço para testes (opcional)
+  hometown-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hometown-test
+    volumes:
+      - ./:/app
+    environment:
+      - PYTHONPATH=/app
+      - ENV=test
+    env_file:
+      - .env
+    networks:
+      - hometown-network
+    command: poetry run pytest tests/ -v
+    profiles:
+      - test
+
+networks:
+  hometown-network:
+    driver: bridge
+
+volumes:
+  hometown-data:
+    driver: local

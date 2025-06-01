@@ -36,6 +36,35 @@ class DataProcessor:
         logger.info(f"Descobertos {len(json_files)} arquivos JSON para processar")
         return json_files
     
+    def check_transformation_needed(self) -> Dict:
+        """Verifica se transformação é necessária"""
+        json_files = self.discover_raw_files()
+        parquet_files = list(self.processed_data_path.glob("aerogeradores_processed_*.parquet"))
+        
+        # Se não temos JSONs, não precisamos transformar
+        if not json_files:
+            return {'needs_transformation': False, 'reason': 'Nenhum arquivo JSON encontrado'}
+        
+        # Se já temos Parquets suficientes, verificar se são mais novos que JSONs
+        if len(parquet_files) >= len(json_files):
+            # Verificar se Parquets são mais novos que JSONs
+            latest_json = max(f.stat().st_mtime for f in json_files)
+            latest_parquet = max(f.stat().st_mtime for f in parquet_files)
+            
+            if latest_parquet > latest_json:
+                return {
+                    'needs_transformation': False, 
+                    'json_count': len(json_files),
+                    'parquet_count': len(parquet_files)
+                }
+        
+        return {
+            'needs_transformation': True, 
+            'reason': 'Transformação necessária',  # ← ADICIONAR ESTA LINHA
+            'json_count': len(json_files), 
+            'parquet_count': len(parquet_files)
+        }
+    
     def _json_to_geodataframe(self, json_file: Path) -> gpd.GeoDataFrame:
         """Converte um arquivo JSON em GeoDataFrame"""
         try:
@@ -119,9 +148,31 @@ class DataProcessor:
         # Salvar como Parquet
         output_path = self._save_geodataframe(gdf, output_name)
         return output_path
+
+        
+    def process_all_files(self, max_workers: int = 4, force_refresh: bool = False) -> List[str]:
+        """Processa todos os arquivos JSON em paralelo (com verificação de idempotência)"""
+        
+        # Verificar se transformação é necessária
+        if not force_refresh:
+            check_result = self.check_transformation_needed()
+            if not check_result['needs_transformation']:
+                existing_parquets = list(self.processed_data_path.glob("aerogeradores_processed_*.parquet"))
+                logger.info(f"✅ {check_result['reason']}")
+                return [str(f) for f in existing_parquets]
+            else:
+                logger.info(f"🔄 Transformação necessária: {check_result}")
+                # Limpar parquets antigos quando há novos JSONs
+                self._cleanup_old_transformations()
+        else:
+            logger.info("🔄 Forçando nova transformação...")
+            # Limpar parquets antigos no force refresh
+            self._cleanup_old_transformations()
+        
+        # Executar transformação normal...
+        # ... resto do código permanece igual
     
-    def process_all_files(self, max_workers: int = 4) -> List[str]:
-        """Processa todos os arquivos JSON em paralelo"""
+        # Executar transformação normal
         json_files = self.discover_raw_files()
         
         if not json_files:
@@ -162,3 +213,36 @@ class DataProcessor:
             logger.warning(f"Arquivos com falha: {failed_files}")
         
         return processed_files
+    
+    def cleanup_all_processed_data(self):
+        """Remove todos os dados processados (método público para limpeza manual)"""
+        try:
+            old_parquet_files = list(self.processed_data_path.glob("aerogeradores_processed_*.parquet"))
+            
+            removed_count = 0
+            for file in old_parquet_files:
+                file.unlink()
+                removed_count += 1
+            
+            logger.info(f"🗑️ Limpeza manual: {removed_count} parquets removidos")
+            return removed_count
+            
+        except Exception as e:
+            logger.error(f"Erro na limpeza manual de parquets: {e}")
+            return 0
+
+    def _cleanup_old_transformations(self):
+        """Remove transformações antigas quando nova extração é feita"""
+        try:
+            old_parquet_files = list(self.processed_data_path.glob("aerogeradores_processed_*.parquet"))
+            
+            removed_count = 0
+            for file in old_parquet_files:
+                file.unlink()
+                removed_count += 1
+                
+            if removed_count > 0:
+                logger.info(f"🧹 Removidos {removed_count} parquets antigos")
+                
+        except Exception as e:
+            logger.warning(f"Erro ao limpar parquets antigos: {e}")

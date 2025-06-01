@@ -32,6 +32,81 @@ class DataConsolidator:
         logger.info(f"Descobertos {len(parquet_files)} arquivos Parquet para consolidar")
         return parquet_files
     
+    
+    def check_consolidation_needed(self) -> dict:
+        """Verifica se consolidação é necessária (lógica inteligente baseada em contagem de registros)"""
+        parquet_files = self.discover_parquet_files()
+        csv_files = list(self.output_data_path.glob("aerogeradores_consolidado_*.csv"))
+        
+        if not parquet_files:
+            return {'needs_consolidation': False, 'reason': 'Nenhum arquivo Parquet encontrado'}
+        
+        if not csv_files:
+            return {'needs_consolidation': True, 'parquet_count': len(parquet_files), 'reason': 'Nenhum CSV encontrado'}
+        
+        # Encontrar CSV mais recente
+        most_recent_csv = max(csv_files, key=lambda f: f.stat().st_mtime)
+        
+        try:
+            logger.info("Verificando se CSV contém todos os dados...")
+            
+            # Contar registros no CSV
+            import pandas as pd
+            csv_df = pd.read_csv(most_recent_csv)
+            csv_records = len(csv_df)
+            
+            # Contar registros esperados nos parquets
+            expected_records = 0
+            for pq_file in parquet_files:
+                try:
+                    pq_df = pd.read_parquet(pq_file)
+                    expected_records += len(pq_df)
+                except Exception as e:
+                    logger.warning(f"Erro ao ler {pq_file.name}: {e}")
+                    # Se não conseguir ler algum parquet, melhor reconsolidar
+                    return {
+                        'needs_consolidation': True,
+                        'reason': f'Erro ao ler parquet {pq_file.name}: {e}'
+                    }
+            
+            logger.info(f"CSV atual: {csv_records} registros")
+            logger.info(f"Parquets esperados: {expected_records} registros")
+            
+            # Verificar se CSV tem todos os registros
+            if csv_records == expected_records:
+                return {
+                    'needs_consolidation': False,
+                    'reason': f'CSV já contém todos os {csv_records:,} registros',
+                    'existing_csv': str(most_recent_csv),
+                    'csv_records': csv_records,
+                    'expected_records': expected_records
+                }
+            elif csv_records > expected_records:
+                # CSV tem mais registros que parquets - possível dados duplicados
+                logger.warning(f"CSV tem mais registros ({csv_records}) que parquets ({expected_records})")
+                return {
+                    'needs_consolidation': True,
+                    'reason': f'CSV com dados extras: {csv_records:,} vs {expected_records:,} registros',
+                    'csv_records': csv_records,
+                    'expected_records': expected_records
+                }
+            else:
+                # CSV tem menos registros - dados incompletos
+                return {
+                    'needs_consolidation': True,
+                    'reason': f'CSV incompleto: {csv_records:,} vs {expected_records:,} registros',
+                    'csv_records': csv_records,
+                    'expected_records': expected_records
+                }
+                
+        except Exception as e:
+            # Se der erro ao ler CSV, melhor reconsolidar
+            logger.error(f"Erro ao verificar CSV {most_recent_csv.name}: {e}")
+            return {
+                'needs_consolidation': True,
+                'reason': f'Erro ao ler CSV: {e}'
+            }
+
     def load_and_combine_parquets(self, parquet_files: List[Path]) -> pd.DataFrame:
         """Carrega e combina todos os arquivos Parquet em um DataFrame"""
         if not parquet_files:
@@ -167,8 +242,31 @@ class DataConsolidator:
             logger.error(f"Erro ao salvar CSV: {e}")
             raise DataProcessingError(f"Falha ao salvar CSV: {e}")
     
-    def consolidate_all(self, output_filename: Optional[str] = None) -> str:
-        """Pipeline completo: Parquet → CSV consolidado"""
+    def consolidate_all(self, output_filename: Optional[str] = None, force_refresh: bool = False) -> str:
+        """Pipeline completo: Parquet → CSV consolidado (com verificação de idempotência)"""
+
+        # Verificar se consolidação é necessária
+        if not force_refresh:
+            check_result = self.check_consolidation_needed()
+            if not check_result['needs_consolidation']:
+                logger.info(f"✅ {check_result['reason']}")
+                
+                # Log detalhado quando pular
+                if 'csv_records' in check_result:
+                    logger.info(f"📊 Registros no CSV: {check_result['csv_records']:,}")
+                    logger.info(f"📦 Registros esperados: {check_result['expected_records']:,}")
+                    
+                return check_result.get('existing_csv', '')
+            else:
+                logger.info(f"🔄 Consolidação necessária: {check_result['reason']}")
+                
+                # Log detalhado quando reconsolidar
+                if 'csv_records' in check_result and 'expected_records' in check_result:
+                    logger.info(f"📊 CSV atual: {check_result['csv_records']:,} registros")
+                    logger.info(f"📦 Esperado: {check_result['expected_records']:,} registros")
+        else:
+            logger.info("🔄 Forçando nova consolidação...")
+        
         logger.info("Iniciando consolidação completa...")
         
         # 1. Descobrir arquivos Parquet
@@ -209,3 +307,20 @@ class DataConsolidator:
             summary['top_eol_names'] = df['NOME_EOL'].value_counts().head(10).to_dict()
         
         return summary
+    
+    def cleanup_all_output_data(self):
+        """Remove todos os CSVs de output (método público para limpeza manual)"""
+        try:
+            old_csv_files = list(self.output_data_path.glob("aerogeradores_consolidado_*.csv"))
+            
+            removed_count = 0
+            for file in old_csv_files:
+                file.unlink()
+                removed_count += 1
+            
+            logger.info(f"🗑️ Limpeza manual: {removed_count} CSVs removidos")
+            return removed_count
+            
+        except Exception as e:
+            logger.error(f"Erro na limpeza manual de CSVs: {e}")
+            return 0

@@ -58,7 +58,7 @@ Após a execução, você encontrará:
 
 ### Logs
 
-Os logs de execução são exibidos diretamente no notebook, mostrando o progresso de cada etapa do pipeline.
+Os logs de execução são exibidos diretamente no notebook, mostrando o progresso de cada etapa do pipeline. Os logs também aparecem na pasta "logs".
 
 ## Arquitetura do sistema
 

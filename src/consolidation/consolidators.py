@@ -161,6 +161,30 @@ class DataConsolidator:
             if col in df_clean.columns:
                 df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
         
+        if 'DATA_ATUALIZACAO' in df_clean.columns:
+            try:
+                logger.info("Convertendo DATA_ATUALIZACAO de timestamp Unix para formato de data...")
+                
+                # Converter de milissegundos Unix para datetime
+                df_clean['DATA_ATUALIZACAO'] = pd.to_datetime(
+                    df_clean['DATA_ATUALIZACAO'], 
+                    unit='ms',  # Unix timestamp em milissegundos
+                    errors='coerce'
+                )
+                
+                # Converter para string no formato YYYY-MM-DD para Tableau
+                df_clean['DATA_ATUALIZACAO'] = df_clean['DATA_ATUALIZACAO'].dt.strftime('%Y-%m-%d')
+                
+                logger.info("✅ DATA_ATUALIZACAO convertida de timestamp Unix para formato de data")
+                
+                # Log de exemplo da conversão
+                if not df_clean['DATA_ATUALIZACAO'].isna().all():
+                    sample_date = df_clean['DATA_ATUALIZACAO'].dropna().iloc[0]
+                    logger.info(f"📅 Exemplo de data convertida: {sample_date}")
+                    
+            except Exception as e:
+                logger.warning(f"❌ Erro ao converter DATA_ATUALIZACAO: {e}")
+
         # 3. Tratar valores nulos
         null_counts = df_clean.isnull().sum()
         if null_counts.any():

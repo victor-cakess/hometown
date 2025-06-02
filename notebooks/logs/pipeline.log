@@ -38,3 +38,13 @@
 2025-06-01 19:42:31 - __main__ - ERROR - Erro durante transformação: Não precisa transformar, não há atualização
 2025-06-01 19:44:59 - __main__ - ERROR - Erro durante transformação: Não precisa transformar, não há atualização
 2025-06-01 19:47:25 - __main__ - ERROR - Erro durante transformação: 'reason'
+2025-06-01 22:35:40 - __main__ - INFO - Validação de conectividade concluída com sucesso
+2025-06-01 22:35:48 - __main__ - INFO - Extração concluída: 24 arquivos
+2025-06-01 22:35:48 - __main__ - INFO - Validação dos dados extraídos concluída com sucesso
+2025-06-01 22:35:49 - __main__ - INFO - Transformação concluída: 24 parquets
+2025-06-01 22:35:49 - __main__ - INFO - Consolidação concluída: aerogeradores_consolidado_20250601_223549.csv
+2025-06-01 22:55:49 - __main__ - INFO - Validação de conectividade concluída com sucesso
+2025-06-01 22:55:57 - __main__ - INFO - Extração concluída: 24 arquivos
+2025-06-01 22:55:57 - __main__ - INFO - Validação dos dados extraídos concluída com sucesso
+2025-06-01 22:55:57 - __main__ - INFO - Transformação concluída: 24 parquets
+2025-06-01 22:55:58 - __main__ - INFO - Consolidação concluída: aerogeradores_consolidado_20250601_225557.csv

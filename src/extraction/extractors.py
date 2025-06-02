@@ -164,16 +164,16 @@ class SigelExtractor:
             if not freshness['needs_refresh']:
                 existing_files = self.discover_existing_files()
                 if len(existing_files) > 0:
-                    logger.info(f"✅ Dados já atualizados! Usando {len(existing_files)} arquivos existentes.")
-                    logger.info(f"📅 Última extração: {freshness['last_extraction_time']}")
-                    logger.info(f"📊 Total de registros: {freshness['last_total_records']}")
+                    logger.info(f"Dados já atualizados! Usando {len(existing_files)} arquivos existentes.")
+                    logger.info(f"Última extração: {freshness['last_extraction_time']}")
+                    logger.info(f"Total de registros: {freshness['last_total_records']}")
                     return existing_files
             else:
-                logger.info("🔄 Dados da API foram atualizados, executando nova extração...")
+                logger.info("Dados da API foram atualizados, executando nova extração...")
                 # Limpar dados antigos quando API mudou
                 self._cleanup_old_extractions()
         else:
-            logger.info("🔄 Forçando nova extração...")
+            logger.info("Forçando nova extração...")
             # Limpar dados antigos no force refresh
             self._cleanup_old_extractions()
         

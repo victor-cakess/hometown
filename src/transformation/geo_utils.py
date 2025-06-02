@@ -64,26 +64,6 @@ def validate_geometry(gdf: gpd.GeoDataFrame) -> bool:
         logger.error(f"Erro na validação geográfica: {e}")
         raise ValidationError(f"Falha na validação geográfica: {e}")
 
-def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """
-    Calcula distância entre dois pontos (haversine)
-    """
-    from math import radians, cos, sin, asin, sqrt
-    
-    # Converter para radianos
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    
-    # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a))
-    
-    # Raio da Terra em km
-    r = 6371
-    
-    return c * r
-
 def validate_coordinates_range(df: pd.DataFrame) -> bool:
     """
     Valida se coordenadas estão em range válido

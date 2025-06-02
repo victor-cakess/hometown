@@ -19,6 +19,47 @@ O projeto foi desenvolvido com os seguintes objetivos técnicos:
 5. **Escalabilidade**: Arquitetura modular que suporte crescimento dos dados e complexidade
 6. **Observabilidade**: Sistema completo de logs e monitoramento de cada etapa do pipeline
 
+## Como executar
+
+### Pré-requisitos
+- Python 3.11+
+- Poetry
+- Git
+
+### Passos para execução
+
+1. **Clone do repositório**:
+```bash
+git clone https://github.com/victor-cakess/hometown.git
+cd hometown
+```
+
+2. **Instalação das dependências**:
+```bash
+poetry install --no-root
+```
+
+3. **Execução do pipeline**:
+```bash
+poetry run jupyter notebook
+```
+
+4. **Execução no Jupyter**:
+   - Abra o arquivo `notebooks/main.ipynb`
+   - Execute todas as células sequencialmente (Cell → Run All)
+   - O pipeline completo será executado automaticamente
+
+### Saídas esperadas
+
+Após a execução, você encontrará:
+- **Dados brutos**: `data/raw/` - Arquivos JSON da API SIGEL
+- **Dados processados**: `data/processed/` - Arquivos Parquet otimizados  
+- **Dados finais**: `data/output/` - CSV pronto para Tableau
+
+### Logs
+
+Os logs de execução são exibidos diretamente no notebook, mostrando o progresso de cada etapa do pipeline.
+
 ## Arquitetura do sistema
 
 ### Visão geral da arquitetura
@@ -340,9 +381,6 @@ hometown/
 │   ├── processed/              # Parquets transformados
 │   └── output/                 # CSV final para Tableau
 ├── pyproject.toml              # Configuração Poetry
-├── Dockerfile                  # Container principal
-├── docker-compose.yml          # Orquestração
-├── Makefile                    # Comandos automatizados
 └── README.md                   # Este documento
 ```
 
@@ -457,12 +495,6 @@ hometown/
 - Documentação executável (literate programming)
 - Facilidade de debug e experimentação
 
-**Docker**: Containerização para reprodutibilidade
-- Isolamento completo de ambiente
-- Consistência entre desenvolvimento e produção
-- Facilidade de deployment e distribuição
-- Integração com orquestradores (Kubernetes, Docker Swarm)
-
 ### Infraestrutura e deployment
 
 **Makefile**: Automação de comandos
@@ -470,12 +502,6 @@ hometown/
 - Comandos compostos para workflows complexos
 - Documentação executável de procedimentos
 - Compatibilidade multiplataforma
-
-**Docker compose**: Orquestração local
-- Definição declarativa de serviços
-- Networking automático entre containers
-- Volume mounting para desenvolvimento
-- Profiles para diferentes ambientes (dev, test, prod)
 
 ## Análise de performance
 
@@ -525,7 +551,6 @@ hometown/
 - Arquitetura stateless permite paralelização trivial
 - File-based checkpointing permite restart de falhas
 - Modular design facilita distribuição em cluster
-- Docker containers simplificam deployment distribuído
 
 **Vertical scaling**:
 - ThreadPoolExecutor scales com CPU cores disponíveis

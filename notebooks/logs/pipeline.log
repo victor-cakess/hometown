@@ -86,3 +86,8 @@
 2025-06-02 13:09:23 - __main__ - INFO - Validação dos dados extraídos concluída com sucesso
 2025-06-02 13:09:24 - __main__ - INFO - Transformação concluída: 24 parquets
 2025-06-02 13:09:24 - __main__ - INFO - Consolidação concluída: aerogeradores_consolidado_20250602_130924.csv
+2025-06-02 15:43:46 - __main__ - INFO - Validação de conectividade concluída com sucesso
+2025-06-02 15:43:59 - __main__ - INFO - Extração concluída: 24 arquivos
+2025-06-02 15:43:59 - __main__ - INFO - Validação dos dados extraídos concluída com sucesso
+2025-06-02 15:44:00 - __main__ - INFO - Transformação concluída: 24 parquets
+2025-06-02 15:44:00 - __main__ - INFO - Consolidação concluída: aerogeradores_consolidado_20250602_154400.csv

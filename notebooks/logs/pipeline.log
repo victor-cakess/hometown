@@ -53,3 +53,10 @@
 2025-06-01 23:52:34 - __main__ - INFO - Validação dos dados extraídos concluída com sucesso
 2025-06-01 23:52:35 - __main__ - INFO - Transformação concluída: 24 parquets
 2025-06-01 23:52:35 - __main__ - INFO - Consolidação concluída: aerogeradores_consolidado_20250601_235235.csv
+2025-06-02 00:20:20 - __main__ - INFO - Validação de conectividade concluída com sucesso
+2025-06-02 00:21:50 - __main__ - ERROR - Erro de validação: Não foi possível conectar com a API: HTTPSConnectionPool(host='sigel.aneel.gov.br', port=443): Read timed out. (read timeout=30)
+2025-06-02 00:26:25 - __main__ - INFO - Validação de conectividade concluída com sucesso
+2025-06-02 00:26:52 - __main__ - INFO - Extração concluída: 24 arquivos
+2025-06-02 00:26:52 - __main__ - INFO - Validação dos dados extraídos concluída com sucesso
+2025-06-02 00:26:53 - __main__ - INFO - Transformação concluída: 24 parquets
+2025-06-02 00:26:53 - __main__ - INFO - Consolidação concluída: aerogeradores_consolidado_20250602_002653.csv

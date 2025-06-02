@@ -223,7 +223,7 @@ class DataConsolidator:
             registros_depois = len(df_clean)
             registros_removidos = registros_antes - registros_depois
             
-            logger.info(f"🔍 Filtro OPERACAO válidas ('Sim' ou 'Não') aplicado:")
+            logger.info(f"   Filtro OPERACAO válidas ('Sim' ou 'Não') aplicado:")
             logger.info(f"   Registros antes: {registros_antes:,}")
             logger.info(f"   Registros depois: {registros_depois:,}")
             logger.info(f"   Registros removidos: {registros_removidos:,} (null, 1, etc)")
@@ -231,6 +231,35 @@ class DataConsolidator:
             # Log da distribuição final
             operacao_counts = df_clean['OPERACAO'].value_counts()
             logger.info(f"   Distribuição final: {operacao_counts.to_dict()}")
+
+        # Filtrar CEGs duplicados - manter apenas o registro mais recente por CEG
+        if 'CEG' in df_clean.columns and 'DATA_ATUALIZACAO' in df_clean.columns:
+            registros_antes = len(df_clean)
+            
+            logger.info(" Removendo CEGs duplicados (mantendo registro mais recente)...")
+            
+            # 1) Converter DATA_ATUALIZACAO para datetime (se ainda não foi convertida)
+            if df_clean['DATA_ATUALIZACAO'].dtype == 'object':
+                df_clean['DATA_ATUALIZACAO'] = pd.to_datetime(df_clean['DATA_ATUALIZACAO'], format='%Y-%m-%d')
+            
+            # 2) Para cada CEG, pegar o índice do registro com a maior DATA_ATUALIZACAO
+            idx_maior_data = df_clean.groupby('CEG')['DATA_ATUALIZACAO'].idxmax()
+            
+            # 3) Criar DataFrame apenas com registros mais recentes por CEG
+            df_clean = df_clean.loc[idx_maior_data].copy()
+            
+            registros_depois = len(df_clean)
+            registros_removidos = registros_antes - registros_depois
+            cegs_unicos = df_clean['CEG'].nunique()
+            
+            logger.info(f"✅ Filtragem de CEGs duplicados concluída:")
+            logger.info(f"   Registros antes: {registros_antes:,}")
+            logger.info(f"   Registros depois: {registros_depois:,}")
+            logger.info(f"   Registros removidos: {registros_removidos:,}")
+            logger.info(f"   CEGs únicos: {cegs_unicos:,}")
+            
+            # Converter DATA_ATUALIZACAO de volta para string para o CSV
+            df_clean['DATA_ATUALIZACAO'] = df_clean['DATA_ATUALIZACAO'].dt.strftime('%Y-%m-%d')
         
         logger.info(f"Otimização concluída: {len(df_clean)} registros, {len(df_clean.columns)} colunas")
         return df_clean

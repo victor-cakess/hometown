@@ -34,17 +34,22 @@ git clone https://github.com/victor-cakess/hometown.git
 cd hometown
 ```
 
-2. **Instalação das dependências**:
+2. **Instalação do poetry**:
+```bash
+sudo apt install python3-poetry
+```
+
+3. **Instalação das dependências**:
 ```bash
 poetry install --no-root
 ```
 
-3. **Execução do pipeline**:
+4. **Execução do pipeline**:
 ```bash
 poetry run jupyter notebook
 ```
 
-4. **Execução no Jupyter**:
+5. **Execução no Jupyter**:
    - Abra o arquivo `notebooks/main.ipynb`
    - Execute todas as células sequencialmente (Cell → Run All)
    - O pipeline completo será executado automaticamente

@@ -303,19 +303,19 @@ class DataConsolidator:
                 
                 # Log detalhado quando pular
                 if 'csv_records' in check_result:
-                    logger.info(f"📊 Registros no CSV: {check_result['csv_records']:,}")
-                    logger.info(f"📦 Registros esperados: {check_result['expected_records']:,}")
+                    logger.info(f"Registros no CSV: {check_result['csv_records']:,}")
+                    logger.info(f"Registros esperados: {check_result['expected_records']:,}")
                     
                 return check_result.get('existing_csv', '')
             else:
-                logger.info(f"🔄 Consolidação necessária: {check_result['reason']}")
+                logger.info(f"Consolidação necessária: {check_result['reason']}")
                 
                 # Log detalhado quando reconsolidar
                 if 'csv_records' in check_result and 'expected_records' in check_result:
-                    logger.info(f"📊 CSV atual: {check_result['csv_records']:,} registros")
-                    logger.info(f"📦 Esperado: {check_result['expected_records']:,} registros")
+                    logger.info(f"CSV atual: {check_result['csv_records']:,} registros")
+                    logger.info(f"Esperado: {check_result['expected_records']:,} registros")
         else:
-            logger.info("🔄 Forçando nova consolidação...")
+            logger.info("Forçando nova consolidação...")
         
         logger.info("Iniciando consolidação completa...")
         

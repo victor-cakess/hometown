@@ -259,7 +259,7 @@ class SigelExtractor:
                 old_metadata.unlink()
                 
             if removed_count > 0:
-                logger.info(f"🧹 Removidos {removed_count} arquivos JSON antigos")
+                logger.info(f"Removidos {removed_count} arquivos JSON antigos")
                 
         except Exception as e:
             logger.warning(f"Erro ao limpar arquivos antigos: {e}")
@@ -278,7 +278,7 @@ class SigelExtractor:
             if old_metadata.exists():
                 old_metadata.unlink()
                 
-            logger.info(f"🗑️ Limpeza manual: {removed_count} arquivos removidos")
+            logger.info(f"Limpeza manual: {removed_count} arquivos removidos")
             return removed_count
             
         except Exception as e:

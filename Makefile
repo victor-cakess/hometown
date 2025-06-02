@@ -16,8 +16,8 @@ build: ## Construir containers
 
 up: ## Subir containers
 	$(DOCKER_COMPOSE) up -d
-	@echo "🚀 Jupyter disponível em: http://localhost:8888"
-	@echo "📋 Para ver logs: make logs"
+	@echo "Jupyter disponível em: http://localhost:8888"
+	@echo "Para ver logs: make logs"
 
 down: ## Parar containers
 	$(DOCKER_COMPOSE) down
@@ -35,7 +35,7 @@ extract: ## Executar apenas extração
 	print('🔍 Validando conexão...')
 	validate_api_connection(SIGEL_CONFIG['url'])
 	
-	print('🚀 Iniciando extração...')
+	print('Iniciando extração...')
 	extractor = SigelExtractor()
 	files = extractor.extract_all_data()
 	print(f'✅ Concluído! {len(files)} arquivos salvos')
@@ -62,7 +62,7 @@ lint: ## Verificar código
 	$(DOCKER_COMPOSE) exec $(SERVICE_NAME) poetry run mypy src/
 
 setup: ## Setup inicial do projeto
-	@echo "🏗️ Configurando projeto Hometown..."
+	@echo "Configurando projeto Hometown..."
 	mkdir -p data/raw data/processed data/output logs tests
 	cp .env.example .env || echo "⚠️ Crie o arquivo .env baseado no .env.example"
 	@echo "✅ Setup concluído!"

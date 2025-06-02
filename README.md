@@ -510,7 +510,7 @@ hometown/
 
 ## Análise de performance
 
-### Benchmarks de Pprformance
+### Benchmarks de performance
 
 **Extração (23.522 registros)**:
 - Tempo total: ~8-10 segundos
@@ -538,7 +538,7 @@ hometown/
 - Compressão automática reduz I/O disk
 - Batch processing minimiza overhead de operações
 
-**CPU pptimizations**:
+**CPU optimizations**:
 - ThreadPoolExecutor para paralelização I/O-bound operations
 - Pandas vectorized operations evitam loops Python
 - GeoPandas spatial indexing para operações geográficas
@@ -603,5 +603,5 @@ O pipeline implementado atende aos requisitos do case, demonstrando:
 1. **Robustez**: Sistema idempotente que evita reprocessamento desnecessário
 2. **Performance**: Processamento eficiente de 23.522 registros em <15 segundos total
 3. **Qualidade**: Validações automáticas garantem dados consistentes e corretos
-4. **Maintainability**: Código modular e bem documentado facilita manutenção
-5. **Scalability**: Arquitetura suporta crescimento significativo de dados
+4. **Manutenção**: Código modular e bem documentado facilita manutenção
+5. **Escalabilidade**: Arquitetura suporta crescimento significativo de dados

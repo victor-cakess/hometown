@@ -164,11 +164,11 @@ class DataProcessor:
                 return [str(f) for f in existing_parquets]
             else:
                 reason = check_result.get('reason', 'Transformação necessária')
-                logger.info(f"🔄 Transformação necessária: {reason}")
+                logger.info(f"Transformação necessária: {reason}")
                 # Limpar parquets antigos quando há novos JSONs
                 self._cleanup_old_transformations()
         else:
-            logger.info("🔄 Forçando nova transformação...")
+            logger.info("Forçando nova transformação...")
             # Limpar parquets antigos no force refresh
             self._cleanup_old_transformations()
         
@@ -224,7 +224,7 @@ class DataProcessor:
                 file.unlink()
                 removed_count += 1
             
-            logger.info(f"🗑️ Limpeza manual: {removed_count} parquets removidos")
+            logger.info(f"Limpeza manual: {removed_count} parquets removidos")
             return removed_count
             
         except Exception as e:
@@ -242,7 +242,7 @@ class DataProcessor:
                 removed_count += 1
                 
             if removed_count > 0:
-                logger.info(f"🧹 Removidos {removed_count} parquets antigos")
+                logger.info(f"Removidos {removed_count} parquets antigos")
                 
         except Exception as e:
             logger.warning(f"Erro ao limpar parquets antigos: {e}")

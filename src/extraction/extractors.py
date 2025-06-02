@@ -188,9 +188,9 @@ class SigelExtractor:
         sample_data = self._get_sample_data()
         latest_update = self._extract_latest_update_date(sample_data)
         
-        logger.info(f"📊 Total de registros: {total_records}")
-        logger.info(f"📄 Total de páginas: {total_pages}")
-        logger.info(f"📅 Data de atualização da API: {latest_update}")
+        logger.info(f"Total de registros: {total_records}")
+        logger.info(f"Total de páginas: {total_pages}")
+        logger.info(f"Data de atualização da API: {latest_update}")
         
         # 3. Extrair dados página por página
         saved_files = []
@@ -235,8 +235,8 @@ class SigelExtractor:
         
         # 5. Log final
         logger.info(f"✅ Extração concluída!")
-        logger.info(f"📁 Arquivos salvos: {len(saved_files)}")
-        logger.info(f"📊 Registros processados: {processed_records}/{total_records}")
+        logger.info(f"Arquivos salvos: {len(saved_files)}")
+        logger.info(f"Registros processados: {processed_records}/{total_records}")
         
         return saved_files
     

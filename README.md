@@ -21,14 +21,14 @@ O projeto foi desenvolvido com os seguintes objetivos técnicos:
 
 ## Arquitetura do sistema
 
-### Visão geral da Arquitetura
+### Visão geral da arquitetura
 
-O pipeline segue uma arquitetura ELT (Extract, Load, Transform) moderna, implementada em três estágios principais:
+O pipeline segue uma arquitetura ETL, implementada em três estágios principais:
 
 ```
 API SIGEL/ANEEL → JSON (Raw) → Parquet (Processed) → CSV (Output) → Tableau
-     |               |              |                 |
-  Extração      Transformação   Consolidação    Visualização
+                       |               |               |               |
+                    Extração      Transformação   Consolidação    Visualização
 ```
 
 ### Componentes principais

@@ -2,7 +2,7 @@
 name = "hometown"
 version = "0.1.0"
 description = "Analytics case - Aerogeradores SIGEL/ANEEL"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Victor José"]
 
 [tool.poetry.dependencies]
 python = "^3.11"

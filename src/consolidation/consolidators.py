@@ -180,7 +180,7 @@ class DataConsolidator:
                 # Log de exemplo da conversão
                 if not df_clean['DATA_ATUALIZACAO'].isna().all():
                     sample_date = df_clean['DATA_ATUALIZACAO'].dropna().iloc[0]
-                    logger.info(f"📅 Exemplo de data convertida: {sample_date}")
+                    logger.info(f"Exemplo de data convertida: {sample_date}")
                     
             except Exception as e:
                 logger.warning(f"❌ Erro ao converter DATA_ATUALIZACAO: {e}")
@@ -205,6 +205,17 @@ class DataConsolidator:
         
         # 5. Validar dados finais
         self._validate_final_data(df_clean)
+
+        if 'POT_MW' in df_clean.columns:
+            registros_antes = len(df_clean)
+            df_clean = df_clean[df_clean['POT_MW'] < 1000]
+            registros_depois = len(df_clean)
+            registros_removidos = registros_antes - registros_depois
+            
+            logger.info(f"🔍 Filtro POT_MW < 1000 MW aplicado:")
+            logger.info(f"   Registros antes: {registros_antes:,}")
+            logger.info(f"   Registros depois: {registros_depois:,}")
+            logger.info(f"   Registros removidos: {registros_removidos:,}")
         
         logger.info(f"Otimização concluída: {len(df_clean)} registros, {len(df_clean.columns)} colunas")
         return df_clean

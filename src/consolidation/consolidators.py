@@ -219,14 +219,18 @@ class DataConsolidator:
 
         if 'OPERACAO' in df_clean.columns:
             registros_antes = len(df_clean)
-            df_clean = df_clean[df_clean['OPERACAO'] == 'Sim']
+            df_clean = df_clean[df_clean['OPERACAO'].isin(['Sim', 'Não'])]
             registros_depois = len(df_clean)
             registros_removidos = registros_antes - registros_depois
             
-            logger.info(f"🔍 Filtro OPERACAO = 'Sim' aplicado:")
+            logger.info(f"🔍 Filtro OPERACAO válidas ('Sim' ou 'Não') aplicado:")
             logger.info(f"   Registros antes: {registros_antes:,}")
             logger.info(f"   Registros depois: {registros_depois:,}")
-            logger.info(f"   Registros removidos: {registros_removidos:,}")
+            logger.info(f"   Registros removidos: {registros_removidos:,} (null, 1, etc)")
+            
+            # Log da distribuição final
+            operacao_counts = df_clean['OPERACAO'].value_counts()
+            logger.info(f"   Distribuição final: {operacao_counts.to_dict()}")
         
         logger.info(f"Otimização concluída: {len(df_clean)} registros, {len(df_clean.columns)} colunas")
         return df_clean
